@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>MyDrive</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#f0f4ff;color:#0f172a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;padding-bottom:80px}
+  .screen{max-width:480px;margin:0 auto;padding:24px 16px}
+  .hidden{display:none!important}
+  /* NAV */
+  nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #dde3f5;display:flex;z-index:100;box-shadow:0 -2px 12px rgba(37,99,235,0.07)}
+  nav button{flex:1;padding:10px 0 6px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+  nav button span.icon{font-size:20px}
+  nav button span.lbl{font-size:9px;font-weight:700;color:#8896b3;letter-spacing:.04em}
+  nav button.active span.lbl{color:#2563eb}
+  nav button .dot{width:18px;height:2px;background:#2563eb;border-radius:1px;display:none}
+  nav button.active .dot{display:block}
+  /* CARDS */
+  .card{background:#fff;border:1px solid #dde3f5;border-radius:16px;padding:18px 16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(37,99,235,0.08)}
+  .label{font-size:10px;font-weight:800;color:#8896b3;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+  /* CHIPS */
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{padding:7px 14px;border-radius:20px;border:1.5px solid #dde3f5;background:#fff;color:#4b5a7a;font-size:13px;font-weight:400;cursor:pointer;white-space:nowrap;transition:all .15s;font-family:inherit}
+  .chip.active{border-color:#2563eb;background:#eff4ff;color:#2563eb;font-weight:700}
+  .chip.teal.active{border-color:#0891b2;background:#ecfeff;color:#0891b2}
+  /* BTN */
+  .btn{padding:14px 20px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;width:100%;transition:all .15s;font-family:inherit;border:none;margin-bottom:8px}
+  .btn-primary{background:#2563eb;color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.3)}
+  .btn-ghost{background:#eff4ff;color:#2563eb;border:1.5px solid #bfcfff}
+  .btn-secondary{background:#fff;color:#4b5a7a;border:1.5px solid #dde3f5}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  /* BADGE */
+  .badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;display:inline-block}
+  /* HEADER */
+  .app-header{margin-bottom:22px}
+  .app-date{font-size:11px;color:#8896b3;letter-spacing:.08em;margin-bottom:4px}
+  .app-title{font-size:30px;font-weight:900;letter-spacing:-.03em;color:#0f172a}
+  .app-title span{color:#2563eb}
+  .app-sub{font-size:14px;color:#4b5a7a;margin-top:2px}
+  /* STATUS PILL */
+  .status-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;margin-top:8px}
+  .status-pill .dot-sm{width:7px;height:7px;border-radius:50%}
+  /* TABS */
+  .tabs{display:flex;gap:8px;margin-bottom:18px}
+  .tab{flex:1;padding:10px 6px;border-radius:12px;border:1.5px solid #dde3f5;background:#fff;cursor:pointer;text-align:center;transition:all .15s;font-family:inherit}
+  .tab.active{border-color:#2563eb;background:#eff4ff;box-shadow:0 0 0 3px rgba(191,207,255,.3)}
+  .tab .tab-icon{font-size:18px}
+  .tab .tab-lbl{font-size:12px;font-weight:700;color:#4b5a7a;margin-top:2px}
+  .tab.active .tab-lbl{color:#2563eb}
+  /* EXERCISE ROW */
+  .ex-row{background:#fff;border:1px solid #dde3f5;border-radius:12px;padding:14px 16px;margin-bottom:8px}
+  .ex-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .ex-name{font-weight:700;font-size:15px}
+  .sets-row{display:flex;gap:6px}
+  .set-btn{flex:1;padding:8px 0;border-radius:10px;border:1.5px solid #dde3f5;background:#f7f9ff;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:2px;font-family:inherit}
+  .set-btn.done{border-color:#2563eb;background:#eff4ff}
+  .set-btn .set-icon{font-size:14px}
+  .set-btn .set-lbl{font-size:10px;font-weight:700;color:#8896b3}
+  .set-btn.done .set-lbl{color:#2563eb}
+  /* TIMER */
+  .timer-box{border-radius:20px;padding:22px 16px;margin-bottom:12px;text-align:center;transition:all .4s}
+  .timer-time{font-size:72px;font-weight:900;letter-spacing:-.04em;line-height:1.1;margin:8px 0}
+  .timer-round{font-size:13px;color:#4b5a7a}
+  .timer-dots{display:flex;gap:6px;justify-content:center;margin-top:14px}
+  .timer-dot{width:9px;height:9px;border-radius:50%;transition:background .3s}
+  .combo-card{background:#fff;border:1px solid #dde3f5;border-radius:14px;padding:14px 16px;margin-bottom:12px}
+  .combo-item{background:#eff4ff;border:1px solid #bfcfff;border-radius:10px;padding:9px 14px;margin-bottom:6px;font-size:14px;font-weight:600;color:#2563eb}
+  /* STATS GRID */
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+  .stat-card{border-radius:14px;padding:16px 12px;text-align:center;border:1px solid rgba(0,0,0,.05);box-shadow:0 1px 3px rgba(37,99,235,0.08)}
+  .stat-val{font-size:26px;font-weight:900}
+  .stat-lbl{font-size:11px;color:#8896b3;margin-top:2px;text-transform:uppercase;letter-spacing:.05em}
+  /* PROGRESS */
+  .prog-bar-bg{background:#f7f9ff;border-radius:8px;height:10px;overflow:hidden;border:1px solid #dde3f5}
+  .prog-bar-fill{height:100%;background:linear-gradient(90deg,#2563eb,#60a5fa);border-radius:8px;transition:width .5s}
+  /* DAY DOTS */
+  .day-dots{display:flex;gap:6px;margin-top:16px;justify-content:center}
+  .day-dot-wrap{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .day-circle{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;border:2px solid #dde3f5;background:transparent;color:#8896b3}
+  .day-circle.done{background:#2563eb;border-color:#2563eb;color:#fff}
+  .day-circle.missed{background:#fee2e2;border-color:#fee2e2;color:#dc2626}
+  .day-circle.today{border-color:#bfcfff}
+  .day-name{font-size:10px;color:#8896b3;font-weight:400}
+  .day-name.today{color:#2563eb;font-weight:800}
+  /* LOG */
+  .log-row{background:#fff;border:1px solid #dde3f5;border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start}
+  .log-left .log-date{font-weight:700;font-size:13px}
+  .log-left .log-meta{font-size:12px;color:#4b5a7a;margin-top:2px}
+  .log-left .log-notes{font-size:11px;color:#8896b3;margin-top:3px;font-style:italic}
+  .log-right{text-align:left;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+  .log-diff{font-size:20px;font-weight:900;color:#2563eb}
+  input[type=range]{width:100%;accent-color:#2563eb;cursor:pointer;height:6px}
+  textarea,input[type=number],input[type=text]{width:100%;background:#f7f9ff;border:1px solid #dde3f5;border-radius:8px;color:#0f172a;font-size:14px;padding:10px 12px;font-family:inherit;outline:none}
+  textarea{resize:vertical;min-height:70px}
+  .two-col{display:flex;gap:10px;margin-bottom:12px}
+  .two-col .card{flex:1;margin-bottom:0}
+  .section-title{font-size:16px;font-weight:800;color:#0f172a;margin-bottom:14px}
+  .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:12px;text-align:center;color:#8896b3}
+  .empty-state .big{font-size:48px}
+  .empty-state .title{font-size:18px;font-weight:700;color:#0f172a}
+</style>
+</head>
+<body>
+
+<!-- ═══ HOME ═══ -->
+<div id="screen-home" class="screen">
+  <div class="app-header">
+    <div class="app-date" id="home-date"></div>
+    <div class="app-title">My<span>Drive</span></div>
+    <div class="app-sub">הגדר את האימון של היום</div>
+    <div id="sheets-status" class="status-pill"></div>
+  </div>
+
+  <div class="card">
+    <div class="label">רמת אנרגיה</div>
+    <div class="chips" id="chips-energy">
+      <button class="chip" data-val="חלש">😴 חלש</button>
+      <button class="chip active" data-val="רגיל">⚡ רגיל</button>
+      <button class="chip" data-val="חזק">🔥 חזק</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">מטרת האימון</div>
+    <div class="chips" id="chips-goal">
+      <button class="chip" data-val="טכניקה">טכניקה</button>
+      <button class="chip" data-val="מהירות">מהירות</button>
+      <button class="chip" data-val="כוח">כוח</button>
+      <button class="chip" data-val="סיבולת">סיבולת</button>
+      <button class="chip active" data-val="שילובים">שילובים</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">זמן פנוי</div>
+    <div class="chips" id="chips-time">
+      <button class="chip" data-val="10">10 דקות</button>
+      <button class="chip active" data-val="20">20 דקות</button>
+      <button class="chip" data-val="30">30 דקות</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">ציוד זמין</div>
+    <div class="chips" id="chips-equipment">
+      <button class="chip teal active" data-val="שק">🥊 שק</button>
+      <button class="chip teal" data-val="משקל גוף בלבד">🤸 משקל גוף</button>
+      <button class="chip teal" data-val="גומיות">🟡 גומיות</button>
+      <button class="chip teal" data-val="משקולות">🏋️ משקולות</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">אילוצים</div>
+    <div class="chips" id="chips-limitations">
+      <button class="chip teal" data-val="בלי קפיצות">🚫 בלי קפיצות</button>
+      <button class="chip teal" data-val="יום קל">🌤 יום קל</button>
+      <button class="chip teal" data-val="בלי עומס כתפיים">🦾 בלי כתפיים</button>
+    </div>
+    <div style="font-size:12px;color:#8896b3;margin-top:8px" id="lim-note">ללא אילוצים — אימון מלא</div>
+  </div>
+
+  <button class="btn btn-primary" onclick="generateAndGo()">צור אימון יומי →</button>
+</div>
+
+<!-- ═══ WORKOUT ═══ -->
+<div id="screen-workout" class="screen hidden">
+  <div style="margin-bottom:18px">
+    <div style="font-size:11px;color:#8896b3;letter-spacing:.08em;margin-bottom:2px">האימון של היום</div>
+    <div id="workout-subtitle" style="font-size:20px;font-weight:800;color:#0f172a"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('strength')" id="tab-strength"><div class="tab-icon">💪</div><div class="tab-lbl">כוח</div></button>
+    <button class="tab" onclick="switchTab('boxing')" id="tab-boxing"><div class="tab-icon">🥊</div><div class="tab-lbl">אגרוף</div></button>
+    <button class="tab" onclick="switchTab('abs')" id="tab-abs"><div class="tab-icon">🔥</div><div class="tab-lbl">בטן</div></button>
+  </div>
+  <div id="section-strength"></div>
+  <div id="section-boxing" class="hidden"></div>
+  <div id="section-abs" class="hidden"></div>
+</div>
+
+<!-- ═══ LOG ═══ -->
+<div id="screen-log" class="screen hidden">
+  <div style="margin-bottom:24px">
+    <div style="font-size:22px;font-weight:800;color:#0f172a">שמירת אימון</div>
+    <div style="font-size:13px;color:#4b5a7a;margin-top:2px">איך היה היום?</div>
+  </div>
+
+  <div class="card">
+    <div class="label">סטטוס</div>
+    <div class="chips" id="chips-status">
+      <button class="chip active" data-val="הושלם">✅ הושלם</button>
+      <button class="chip" data-val="חלקי">⚡ חלקי</button>
+      <button class="chip" data-val="לא בוצע">❌ לא בוצע</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">רמת קושי</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:12px;color:#8896b3">קל</span>
+      <span id="diff-val" style="font-size:28px;font-weight:900;color:#2563eb">6</span>
+      <span style="font-size:12px;color:#8896b3">קשה</span>
+    </div>
+    <input type="range" min="1" max="10" value="6" id="diff-slider" oninput="updateDiff(this.value)">
+  </div>
+
+  <div class="card">
+    <div class="label">תחושה</div>
+    <div class="chips" id="chips-feeling">
+      <button class="chip" data-val="חלש">😩 חלש</button>
+      <button class="chip" data-val="סביר">😐 סביר</button>
+      <button class="chip active" data-val="טוב">😊 טוב</button>
+      <button class="chip" data-val="חזק">💪 חזק</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">הערות</div>
+    <textarea id="log-notes" placeholder="איך הרגשת? משהו מיוחד?"></textarea>
+  </div>
+
+  <div class="two-col">
+    <div class="card"><div class="label">משקל (ק״ג)</div><input type="number" step="0.1" id="log-weight" placeholder="78.5" style="direction:ltr"></div>
+    <div class="card"><div class="label">שינה (שע׳)</div><input type="number" step="0.5" id="log-sleep" placeholder="7.0" style="direction:ltr"></div>
+  </div>
+
+  <button class="btn btn-primary" id="save-btn" onclick="saveLog()">שמור אימון</button>
+  <div id="sheets-save-note" style="font-size:11px;color:#8896b3;text-align:center;margin-top:4px"></div>
+</div>
+
+<!-- ═══ SUMMARY ═══ -->
+<div id="screen-summary" class="screen hidden">
+  <div style="margin-bottom:24px">
+    <div style="font-size:22px;font-weight:800;color:#0f172a">סיכום שבועי</div>
+    <div style="font-size:13px;color:#4b5a7a;margin-top:2px">יעד: 5 אימונים בשבוע</div>
+  </div>
+  <div id="summary-content"><div style="text-align:center;padding:40px 0;color:#8896b3">טוען...</div></div>
+</div>
+
+<!-- ═══ NAV ═══ -->
+<nav>
+  <button class="active" onclick="showScreen('home')" id="nav-home"><span class="icon">🏠</span><span class="lbl">בית</span><div class="dot"></div></button>
+  <button onclick="showScreen('workout')" id="nav-workout"><span class="icon">🥊</span><span class="lbl">אימון</span><div class="dot"></div></button>
+  <button onclick="showScreen('log')" id="nav-log"><span class="icon">✅</span><span class="lbl">שמירה</span><div class="dot"></div></button>
+  <button onclick="showScreen('summary')" id="nav-summary"><span class="icon">📊</span><span class="lbl">שבוע</span><div class="dot"></div></button>
+</nav>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────────────
+const SHEETS_URL = "https://script.google.com/macros/s/AKfycbyM72bYHA8Q3IkS2t6cqs2PXbtFg_7VYAAdTRXsG-fOltxVhaGcFfL3TNEBRYdsbPbS/exec";
+
+// ── DATA LIBRARIES ───────────────────────────────────────────────────────────
+const COMBOS_BY_GOAL = {
+  טכניקה:  ["ג׳אב-קרוס","ג׳אב-ג׳אב-קרוס","ג׳אב-סליפ-קרוס","ג׳אב-קרוס-רול-קרוס","ג׳אב-לגוף-קרוס"],
+  מהירות:  ["ג׳אב-ג׳אב-קרוס","דאבל ג׳אב-קרוס","ג׳אב-קרוס","ג׳אב-קרוס-הוק","ג׳אב-קרוס-הוק-קרוס"],
+  כוח:     ["ג׳אב-קרוס-אפרקאט","ג׳אב-הוק-קרוס","ג׳אב-קרוס-הוק-קרוס","ג׳אב-לגוף-קרוס","דאבל ג׳אב-קרוס"],
+  סיבולת:  ["ג׳אב-קרוס","ג׳אב-ג׳אב-קרוס","ג׳אב-קרוס-הוק","דאבל ג׳אב-קרוס","ג׳אב-קרוס-אפרקאט"],
+  שילובים: ["ג׳אב-קרוס-הוק-קרוס","ג׳אב-קרוס-רול-קרוס","ג׳אב-סליפ-קרוס","ג׳אב-קרוס-אפרקאט","ג׳אב-הוק-קרוס"],
+};
+const FOCUS_BY_GOAL = {
+  טכניקה:  ["דיוק ומכניקה נקייה","תנועה חדה","איזון ושליטה","ריקוד הידיים","קצב מדויק"],
+  מהירות:  ["פריצת מהירות","הדק מהיר","שחרור ידיים","קומבו מהיר","בזק ידיים"],
+  כוח:     ["כוח אחורי","סיבוב הירכיים","אגרוף חדירה","עוצמה מלאה","מחץ פינאלי"],
+  סיבולת:  ["קצב אחיד","לא לעצור","נשימה ותנועה","נפח גבוה","תנועה רציפה"],
+  שילובים: ["זרימה בין קומבינציות","שרשרת תנועות","יצירתיות","שילוב גוף עליון","קומבו מלא"],
+};
+const STRENGTH_ALL      = ["שכיבות סמיכה","שכיבות סמיכה בשיפוע","סקוואטים","לאנג׳ים","לאנג׳ים לאחור","פלאנק","פלאנק צד","מטפסי הרים","ברפיז","גשר ישבן","סקווט סטטי","טאפס לכתפיים","הרמות ברכיים"];
+const STRENGTH_NO_JUMPS = ["שכיבות סמיכה","שכיבות סמיכה בשיפוע","סקוואטים","לאנג׳ים","לאנג׳ים לאחור","פלאנק","פלאנק צד","גשר ישבן","סקווט סטטי","טאפס לכתפיים"];
+const STRENGTH_NO_SHLDR = ["סקוואטים","לאנג׳ים","לאנג׳ים לאחור","פלאנק","גשר ישבן","סקווט סטטי","מטפסי הרים","הרמות ברכיים"];
+const STRENGTH_LIGHT    = ["לאנג׳ים לאחור","פלאנק","פלאנק צד","גשר ישבן","סקווט סטטי","טאפס לכתפיים"];
+const ABS_ALL           = ["כפיפות בטן","הרמות רגליים","פלאנק","אופניים","hollow hold","toe touches","מטפסי הרים"];
+
+// ── STORAGE ──────────────────────────────────────────────────────────────────
+const ls = {
+  save: (k,v) => { try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} },
+  load: (k,fb=null) => { try{const v=localStorage.getItem(k);return v?JSON.parse(v):fb;}catch(e){return fb;} }
+};
+async function sheetsGet(action){ try{ const r=await fetch(`${SHEETS_URL}?action=${action}`); return await r.json(); }catch(e){ return null; } }
+async function sheetsPost(action,data){ try{ const r=await fetch(SHEETS_URL,{method:"POST",body:JSON.stringify({action,data})}); return await r.json(); }catch(e){ return null; } }
+
+async function saveWorkoutLog(log){
+  ls.save("mydrive_logs", (() => { const logs=ls.load("mydrive_logs",[]); const idx=logs.findIndex(l=>l.date===log.date); if(idx>=0)logs[idx]=log; else logs.push(log); return logs; })());
+  await sheetsPost("saveLog", log);
+}
+async function getWorkoutLogs(){
+  const r = await sheetsGet("getLogs");
+  return Array.isArray(r) ? r : ls.load("mydrive_logs",[]);
+}
+async function getWeeklySummary(){
+  const r = await sheetsGet("getSummary");
+  if(r && !r.error) return r;
+  const logs=ls.load("mydrive_logs",[]);
+  const now=new Date(); const dow=now.getDay();
+  const ws=new Date(now); ws.setDate(now.getDate()-dow); ws.setHours(0,0,0,0);
+  const done=logs.filter(l=>new Date(l.date)>=ws&&(l.status==="הושלם"||l.status==="חלקי"));
+  const boxing=done.filter(l=>(l.equipment||[]).includes("שק")).length;
+  const avgDiff=done.length?Math.round(done.reduce((s,l)=>s+(l.difficulty||0),0)/done.length*10)/10:0;
+  const totalMin=done.reduce((s,l)=>s+(l.availableTime||0),0);
+  let streak=0; const d=new Date(); d.setHours(0,0,0,0);
+  for(let i=0;i<30;i++){const ds=d.toISOString().split("T")[0];const f=logs.find(l=>l.date===ds&&(l.status==="הושלם"||l.status==="חלקי"));if(f){streak++;d.setDate(d.getDate()-1);}else break;}
+  return {total:done.length,target:5,boxing,strength:done.length,avgDiff,totalMin,streak,recentLogs:[...logs].reverse().slice(0,7),pct:Math.round((done.length/5)*100)};
+}
+
+// ── GENERATOR ────────────────────────────────────────────────────────────────
+const shuffle = a => [...a].sort(()=>Math.random()-.5);
+const pick = (a,ex=[]) => { const p=a.filter(x=>!ex.includes(x)); return p[Math.floor(Math.random()*p.length)]||a[0]; };
+function getReps(name,energy,isLight){
+  const timed=["פלאנק","פלאנק צד","סקווט סטטי","hollow hold"];
+  if(timed.includes(name)) return isLight?"20 שנ׳":energy==="חלש"?"25 שנ׳":energy==="חזק"?"45 שנ׳":"30 שנ׳";
+  return `${isLight?8:energy==="חלש"?10:energy==="חזק"?15:12} חזרות`;
+}
+function generateWorkout(params){
+  const {energy,goal,availableTime,equipment,limitations}=params;
+  const isLight=limitations.includes("יום קל"), noJumps=limitations.includes("בלי קפיצות"), noShoulder=limitations.includes("בלי עומס כתפיים");
+  let sPool=isLight?STRENGTH_LIGHT:noJumps?STRENGTH_NO_JUMPS:noShoulder?STRENGTH_NO_SHLDR:STRENGTH_ALL;
+  if(noJumps) sPool=sPool.filter(e=>!["ברפיז","מטפסי הרים","הרמות ברכיים"].includes(e));
+  const strengthWorkout=shuffle(sPool).slice(0,5).map(name=>({name,sets:3,value:getReps(name,energy,isLight)}));
+  const comboPool=shuffle(COMBOS_BY_GOAL[goal]||Object.values(COMBOS_BY_GOAL).flat());
+  const focusPool=shuffle(FOCUS_BY_GOAL[goal]||FOCUS_BY_GOAL["שילובים"]);
+  const hasBag=equipment.includes("שק");
+  const titles=["קצב ודיוק","שילובים בינוניים","עוצמה","תנועה וזרימה","סיום חזק"];
+  const rounds=Array.from({length:5},(_,i)=>{const u=[];const c1=pick(comboPool,u);u.push(c1);const c2=pick(comboPool,u);u.push(c2);const c3=pick(comboPool,u);return{round:i+1,title:titles[i],focus:focusPool[i%focusPool.length],workSeconds:isLight?90:120,restSeconds:15,combos:[c1,c2,c3],isShadow:!hasBag};});
+  const absWorkout=shuffle(ABS_ALL).slice(0,3).map(name=>({name,value:["פלאנק","hollow hold"].includes(name)?(isLight?"20 שנ׳":"30 שנ׳"):(isLight?"12 חזרות":"20 חזרות")}));
+  return{date:new Date().toISOString().split("T")[0],params,strengthWorkout,boxingWorkout:{rounds},absWorkout};
+}
+
+// ── APP STATE ────────────────────────────────────────────────────────────────
+let currentWorkout = ls.load("mydrive_today");
+let timerInterval = null;
+let timerState = {phase:"idle",roundIdx:0,secs:120,running:false};
+
+// ── CHIPS ────────────────────────────────────────────────────────────────────
+function initChips(groupId, multi=false){
+  document.querySelectorAll(`#${groupId} .chip`).forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      if(multi){ btn.classList.toggle("active"); }
+      else { document.querySelectorAll(`#${groupId} .chip`).forEach(b=>b.classList.remove("active")); btn.classList.add("active"); }
+      if(groupId==="chips-limitations"){
+        const any=document.querySelectorAll("#chips-limitations .chip.active").length>0;
+        document.getElementById("lim-note").style.display=any?"none":"block";
+      }
+    });
+  });
+}
+function getChipVal(groupId){ return document.querySelector(`#${groupId} .chip.active`)?.dataset.val||""; }
+function getChipVals(groupId){ return [...document.querySelectorAll(`#${groupId} .chip.active`)].map(b=>b.dataset.val); }
+
+// ── NAVIGATION ───────────────────────────────────────────────────────────────
+function showScreen(name){
+  ["home","workout","log","summary"].forEach(s=>{
+    document.getElementById(`screen-${s}`).classList.toggle("hidden",s!==name);
+    document.getElementById(`nav-${s}`).classList.toggle("active",s===name);
+  });
+  if(name==="summary") loadSummary();
+  if(name==="workout" && currentWorkout) renderWorkout();
+}
+
+// ── HOME ─────────────────────────────────────────────────────────────────────
+function initHome(){
+  document.getElementById("home-date").textContent=new Date().toLocaleDateString("he-IL",{weekday:"long",day:"numeric",month:"long"});
+  initChips("chips-energy"); initChips("chips-goal"); initChips("chips-time");
+  initChips("chips-equipment",true); initChips("chips-limitations",true);
+  initChips("chips-status"); initChips("chips-feeling");
+  updateSheetsStatus();
+}
+function updateSheetsStatus(){
+  const el=document.getElementById("sheets-status");
+  el.innerHTML=`<div class="dot-sm" style="background:#16a34a"></div><span style="color:#16a34a">Google Sheets מחובר</span>`;
+  el.style.background="#f0fdf4"; el.style.border="1px solid #16a34a22";
+  document.getElementById("sheets-save-note").textContent="☁️ נשמר גם ב-Google Sheets";
+}
+
+function generateAndGo(){
+  const params={
+    energy:getChipVal("chips-energy"),
+    goal:getChipVal("chips-goal"),
+    availableTime:parseInt(getChipVal("chips-time")||"20"),
+    equipment:getChipVals("chips-equipment"),
+    limitations:getChipVals("chips-limitations")
+  };
+  currentWorkout=generateWorkout(params);
+  ls.save("mydrive_today",currentWorkout);
+  sheetsPost("saveToday",currentWorkout);
+  renderWorkout();
+  showScreen("workout");
+}
+
+// ── WORKOUT ──────────────────────────────────────────────────────────────────
+function switchTab(name){
+  ["strength","boxing","abs"].forEach(s=>{
+    document.getElementById(`section-${s}`).classList.toggle("hidden",s!==name);
+    document.getElementById(`tab-${s}`).classList.toggle("active",s===name);
+  });
+}
+
+function renderWorkout(){
+  if(!currentWorkout) return;
+  const {strengthWorkout,boxingWorkout,absWorkout,params}=currentWorkout;
+  document.getElementById("workout-subtitle").textContent=`${params.goal} · ${params.energy} · ${params.availableTime} דק׳`;
+
+  // STRENGTH
+  let sh="<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:14px'><div class='section-title' style='margin-bottom:0'>💪 כוח — קליסטניקס פול בודי</div><span class='badge' style='background:#eff4ff;color:#2563eb;border:1px solid #2563eb22'>3 סטים לתרגיל</span></div>";
+  strengthWorkout.forEach((ex,i)=>{
+    sh+=`<div class='ex-row'><div class='ex-top'><span class='ex-name'>${ex.name}</span><span class='badge' style='background:#eff4ff;color:#2563eb;border:1px solid #2563eb22'>${ex.value}</span></div><div class='sets-row'>`;
+    for(let s=1;s<=3;s++) sh+=`<button class='set-btn' onclick='toggleSet(this)'><span class='set-icon'>⬜</span><span class='set-lbl'>סט ${s}</span></button>`;
+    sh+=`</div></div>`;
+  });
+  sh+=`<button class='btn btn-primary' onclick="switchTab('boxing')">המשך לאגרוף ←</button>`;
+  document.getElementById("section-strength").innerHTML=sh;
+
+  // BOXING
+  renderTimer(boxingWorkout.rounds, params.equipment?.includes("שק"));
+
+  // ABS
+  let ab=`<div class='section-title'>🔥 בטן — בלוק קצר</div>`;
+  absWorkout.forEach(ex=>{ ab+=`<div class='ex-row' style='display:flex;justify-content:space-between;align-items:center'><span class='ex-name'>${ex.name}</span><span class='badge' style='background:#f0fdf4;color:#16a34a;border:1px solid #16a34a22'>${ex.value}</span></div>`; });
+  ab+=`<div style='margin-top:14px'><button class='btn btn-primary' onclick="showScreen('log')">✅ שמור אימון</button><button class='btn btn-secondary' onclick='regenWorkout()'>🔄 צור מחדש</button></div>`;
+  document.getElementById("section-abs").innerHTML=ab;
+}
+
+function toggleSet(btn){
+  btn.classList.toggle("done");
+  btn.querySelector(".set-icon").textContent=btn.classList.contains("done")?"✅":"⬜";
+}
+function regenWorkout(){
+  if(!currentWorkout) return;
+  currentWorkout=generateWorkout(currentWorkout.params);
+  ls.save("mydrive_today",currentWorkout);
+  sheetsPost("saveToday",currentWorkout);
+  renderWorkout();
+}
+
+// ── TIMER ────────────────────────────────────────────────────────────────────
+function renderTimer(rounds, hasBag){
+  timerState={phase:"idle",roundIdx:0,secs:rounds[0]?.workSeconds||120,running:false,rounds};
+  const el=document.getElementById("section-boxing");
+  el.innerHTML=`
+    <div class='section-title'>🥊 אגרוף — ${hasBag?"עבודה על השק":"אגרוף בצל"}</div>
+    <div id='timer-box' class='timer-box' style='background:#f7f9ff;border:2px solid rgba(37,99,235,.2)'>
+      <span id='timer-badge' class='badge' style='background:#f7f9ff;color:#8896b3;border:1px solid #8896b322'>מוכן להתחיל</span>
+      <div id='timer-display' class='timer-time'>02:00</div>
+      <div id='timer-round-lbl' class='timer-round'>סט 1 מתוך 5</div>
+      <div class='timer-dots' id='timer-dots'></div>
+    </div>
+    <div id='timer-combo' class='combo-card hidden'></div>
+    <div style='display:flex;gap:8px' id='timer-controls'>
+      <button class='btn btn-primary' onclick='timerStart()'>▶ התחל אגרוף</button>
+    </div>
+    <button class='btn btn-ghost' onclick="switchTab('abs')" style='margin-top:8px'>המשך לבטן ←</button>
+  `;
+  renderTimerDots();
+}
+
+function renderTimerDots(){
+  const {rounds,roundIdx}=timerState;
+  if(!rounds) return;
+  const el=document.getElementById("timer-dots");
+  if(!el) return;
+  el.innerHTML=rounds.map((_,i)=>`<div class='timer-dot' style='background:${i<roundIdx?"#16a34a":i===roundIdx?"#2563eb":"#dde3f5"};border:1.5px solid ${i===roundIdx?"#2563eb":"#dde3f5"}'></div>`).join("");
+}
+
+function updateTimerUI(){
+  const {phase,roundIdx,secs,rounds}=timerState;
+  const mm=String(Math.floor(secs/60)).padStart(2,"0"), ss=String(secs%60).padStart(2,"0");
+  const disp=document.getElementById("timer-display");
+  const badge=document.getElementById("timer-badge");
+  const box=document.getElementById("timer-box");
+  const rl=document.getElementById("timer-round-lbl");
+  const combo=document.getElementById("timer-combo");
+  if(!disp) return;
+
+  const isDone=phase==="done", isWork=phase==="work", isRest=phase==="rest";
+  disp.textContent=isDone?"🏆":`${mm}:${ss}`;
+  rl.textContent=isDone?"האימון הסתיים! כל הכבוד 💪":`סט ${roundIdx+1} מתוך ${rounds.length}`;
+  if(isDone){ badge.textContent="✅ סיום!"; badge.style.cssText="background:#f0fdf4;color:#16a34a;border:1px solid #16a34a22"; box.style.cssText="background:#f0fdf4;border:2px solid rgba(22,163,74,.3)"; disp.style.color="#16a34a"; combo.classList.add("hidden"); }
+  else if(isWork){ badge.textContent="⚡ עבודה"; badge.style.cssText="background:#eff4ff;color:#2563eb;border:1px solid #2563eb22"; box.style.cssText="background:#eff4ff;border:2px solid rgba(37,99,235,.3)"; disp.style.color="#0f172a"; }
+  else if(isRest){ badge.textContent="💨 מנוחה"; badge.style.cssText="background:#f5f3ff;color:#7c3aed;border:1px solid #7c3aed22"; box.style.cssText="background:#f5f3ff;border:2px solid rgba(124,58,237,.3)"; disp.style.color="#0f172a"; }
+  else { badge.textContent="מוכן להתחיל"; badge.style.cssText="background:#f7f9ff;color:#8896b3;border:1px solid #8896b322"; }
+
+  // combos
+  if(isWork && rounds[roundIdx]){
+    const r=rounds[roundIdx];
+    combo.classList.remove("hidden");
+    combo.innerHTML=`<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:10px'><span style='font-weight:800;font-size:14px;color:#2563eb'>סט ${r.round} — ${r.title}</span><span class='badge' style='background:#f7f9ff;color:#8896b3;border:1px solid #8896b322'>${r.focus}</span></div>${r.combos.map((c,i)=>`<div class='combo-item'>${i+1}. ${c}</div>`).join("")}`;
+  } else if(isRest){
+    combo.classList.remove("hidden");
+    combo.innerHTML=`<div style='font-size:14px;color:#7c3aed;font-weight:600;text-align:center;padding:10px 0'>נשום עמוק 💨 הסט הבא מגיע</div>`;
+  } else if(!isDone){ combo.classList.add("hidden"); }
+
+  renderTimerDots();
+
+  // controls
+  const ctrl=document.getElementById("timer-controls");
+  if(!ctrl) return;
+  if(isDone){ ctrl.innerHTML=`<button class='btn btn-ghost' onclick='timerReset()'>↺ איפוס</button>`; return; }
+  if(phase==="idle"){ ctrl.innerHTML=`<button class='btn btn-primary' onclick='timerStart()'>▶ התחל אגרוף</button>`; return; }
+  ctrl.innerHTML=timerState.running
+    ? `<button class='btn btn-ghost' onclick='timerPause()'>⏸ עצור</button><button class='btn btn-secondary' onclick='timerReset()' style='width:auto;padding:14px 16px;flex-shrink:0'>↺</button>`
+    : `<button class='btn btn-primary' onclick='timerResume()'>▶ המשך</button><button class='btn btn-secondary' onclick='timerReset()' style='width:auto;padding:14px 16px;flex-shrink:0'>↺</button>`;
+}
+
+function timerStart(){ timerState.phase="work"; timerState.secs=timerState.rounds[0].workSeconds||120; timerState.running=true; updateTimerUI(); timerTick(); }
+function timerPause(){ timerState.running=false; clearInterval(timerInterval); updateTimerUI(); }
+function timerResume(){ timerState.running=true; updateTimerUI(); timerTick(); }
+function timerReset(){ clearInterval(timerInterval); timerState.phase="idle"; timerState.roundIdx=0; timerState.secs=timerState.rounds[0]?.workSeconds||120; timerState.running=false; updateTimerUI(); }
+function timerTick(){
+  clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{
+    timerState.secs--;
+    if(timerState.secs<=0){
+      clearInterval(timerInterval);
+      timerTransition();
+      return;
+    }
+    updateTimerUI();
+  },1000);
+}
+function timerTransition(){
+  const {phase,roundIdx,rounds}=timerState;
+  if(phase==="work"){
+    if(roundIdx>=rounds.length-1){ timerState.phase="done"; timerState.secs=0; timerState.running=false; }
+    else { timerState.phase="rest"; timerState.secs=rounds[roundIdx].restSeconds||15; timerTick(); }
+  } else if(phase==="rest"){
+    const next=roundIdx+1;
+    timerState.roundIdx=next; timerState.phase="work"; timerState.secs=rounds[next].workSeconds||120; timerTick();
+  }
+  updateTimerUI();
+}
+
+// ── LOG ──────────────────────────────────────────────────────────────────────
+function updateDiff(v){ document.getElementById("diff-val").textContent=v; const c=v<=3?"#16a34a":v<=6?"#d97706":"#dc2626"; document.getElementById("diff-val").style.color=c; }
+
+async function saveLog(){
+  const btn=document.getElementById("save-btn");
+  btn.disabled=true; btn.textContent="שומר...";
+  const log={
+    date:new Date().toISOString().split("T")[0],
+    status:getChipVal("chips-status"),
+    difficulty:parseInt(document.getElementById("diff-slider").value),
+    feeling:getChipVal("chips-feeling"),
+    notes:document.getElementById("log-notes").value,
+    weight:document.getElementById("log-weight").value||null,
+    sleepHours:document.getElementById("log-sleep").value||null,
+    equipment:currentWorkout?.params?.equipment||[],
+    availableTime:currentWorkout?.params?.availableTime||0,
+    goal:currentWorkout?.params?.goal||"",
+    energy:currentWorkout?.params?.energy||"",
+  };
+  await saveWorkoutLog(log);
+  btn.textContent="✅ נשמר!";
+  setTimeout(()=>{ btn.disabled=false; btn.textContent="שמור אימון"; showScreen("summary"); },1200);
+}
+
+// ── SUMMARY ──────────────────────────────────────────────────────────────────
+async function loadSummary(){
+  document.getElementById("summary-content").innerHTML=`<div style='text-align:center;padding:40px 0;color:#8896b3'>טוען...</div>`;
+  const s=await getWeeklySummary();
+  const allLogs=await getWorkoutLogs();
+  const today=new Date().toISOString().split("T")[0];
+  const now=new Date(); const dow=now.getDay();
+  const weekDays=Array.from({length:7},(_,i)=>{const d=new Date(now);d.setDate(now.getDate()-dow+i);d.setHours(0,0,0,0);return d.toISOString().split("T")[0];});
+  const dayNamesHe=["א׳","ב׳","ג׳","ד׳","ה׳","ו׳","ש׳"];
+  const scColor={"הושלם":"#16a34a","חלקי":"#d97706","לא בוצע":"#dc2626"};
+  const scBg={"הושלם":"#f0fdf4","חלקי":"#fffbeb","לא בוצע":"#fee2e2"};
+  const fi={"חלש":"😩","סביר":"😐","טוב":"😊","חזק":"💪"};
+
+  let html=`
+    <div class='card'>
+      <div style='display:flex;justify-content:space-between;margin-bottom:10px'><span style='font-weight:700'>${s.total} / ${s.target} אימונים</span><span style='color:#2563eb;font-weight:900'>${s.pct}%</span></div>
+      <div class='prog-bar-bg'><div class='prog-bar-fill' style='width:${Math.min(s.pct,100)}%'></div></div>
+      <div class='day-dots'>
+        ${weekDays.map((d,i)=>{
+          const log=allLogs.find(l=>l.date===d);
+          const isDone=log&&(log.status==="הושלם"||log.status==="חלקי");
+          const isMissed=log&&log.status==="לא בוצע";
+          const isToday=d===today;
+          return `<div class='day-dot-wrap'><div class='day-circle ${isDone?"done":isMissed?"missed":""} ${isToday?"today":""}'>${isDone?"✓":isMissed?"✗":""}</div><div class='day-name ${isToday?"today":""}'>${dayNamesHe[i]}</div></div>`;
+        }).join("")}
+      </div>
+    </div>
+    <div class='stats-grid'>
+      ${[{l:"רצף",v:`${s.streak} 🔥`,c:"#2563eb",bg:"#eff4ff"},{l:"עמידה ביעד",v:`${s.pct}%`,c:s.pct>=100?"#16a34a":"#2563eb",bg:s.pct>=100?"#f0fdf4":"#eff4ff"},{l:"ממוצע קושי",v:s.avgDiff||"—",c:"#7c3aed",bg:"#f5f3ff"},{l:"סה״כ דקות",v:s.totalMin,c:"#d97706",bg:"#fffbeb"},{l:"אימוני אגרוף",v:s.boxing,c:"#2563eb",bg:"#eff4ff"},{l:"אימונים מלאים",v:s.strength,c:"#16a34a",bg:"#f0fdf4"}].map(it=>`<div class='stat-card' style='background:${it.bg};border-color:${it.c}22'><div class='stat-val' style='color:${it.c}'>${it.v}</div><div class='stat-lbl'>${it.l}</div></div>`).join("")}
+    </div>`;
+
+  if((s.recentLogs||[]).length>0){
+    html+=`<div style='font-size:11px;font-weight:800;color:#8896b3;letter-spacing:.08em;text-transform:uppercase;margin:20px 0 10px'>לוג אחרון</div>`;
+    html+=s.recentLogs.map(l=>`
+      <div class='log-row'>
+        <div class='log-left'>
+          <div class='log-date'>${new Date(l.date).toLocaleDateString("he-IL",{weekday:"short",day:"numeric",month:"short"})}</div>
+          <div class='log-meta'>${l.goal||""} · ${l.energy||""}${l.feeling?` · ${fi[l.feeling]||""} ${l.feeling}`:""}</div>
+          ${l.notes?`<div class='log-notes'>"${l.notes}"</div>`:""}
+        </div>
+        <div class='log-right'>
+          <span class='badge' style='color:${scColor[l.status]||"#8896b3"};background:${scBg[l.status]||"#f7f9ff"};border:1px solid ${scColor[l.status]||"#8896b3"}22'>${l.status}</span>
+          ${l.difficulty?`<span class='log-diff'>${l.difficulty}</span>`:""}
+        </div>
+      </div>`).join("");
+  } else {
+    html+=`<div style='text-align:center;padding:40px 0;color:#8896b3'><div style='font-size:36px;margin-bottom:8px'>📋</div><div>עדיין אין לוגים. בצע אימון ושמור אותו!</div></div>`;
+  }
+
+  document.getElementById("summary-content").innerHTML=html;
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+initHome();
+if(currentWorkout){ renderWorkout(); }
+</script>
+</body>
+</html>
